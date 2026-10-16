@@ -58,14 +58,16 @@
 ```bash
 git clone https://github.com/youngseo22/smartfactory-edge-aiops.git
 
-# 가상환경 생성 및 활성화
+cd smartfactory-legacy-code
+
+# 가상환경 생성
 python -m venv venv
+
+# 가상환경 활성화
 # Windows (PowerShell):
 .\venv\Scripts\Activate.ps1
 # Mac / Linux:
 source venv/bin/activate
-
-cd smartfactory-edge-aiops
 
 # 필수 패키지 설치
 pip install -r requirements.txt
