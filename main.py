@@ -3,9 +3,10 @@ import json
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from shared import message_queue, active_connections, stats, pipeline_stats, bigquery_storage, add_log
+from shared import message_queue, active_connections, stats, pipeline_stats, bigquery_storage, add_log, add_aiops_log
 from routes_dashboard import router as dashboard_router
 from routes_pipeline import router as pipeline_router
+from routes_aiops import router as aiops_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
             except Exception:
                 delay_sec = 0.0
 
-            # 1~3단계 로직 처리
+            # 1~3단계 처리
             stats["queue_backlog"] = message_queue.qsize()
             if delay_sec > 1.5:
                 stats["late_data"] += 1
@@ -31,8 +32,10 @@ async def lifespan(app: FastAPI):
             if payload.get("status") == "WARNING":
                 stats["route_b_warnings"] += 1
                 add_log(f"🚨 [Route B 긴급] AI Agent 호출 | 기기: {device_id} | SVM: {payload['svm']}")
+                # 5단계 AIOps 에이전트 & Slack 알림 트리거 시뮬레이션
+                add_aiops_log(device_id, payload["svm"])
 
-            # 4단계 파이프라인 로직 처리
+            # 4단계 파이프라인 처리
             pipeline_stats["raw_incoming"] += 1
             if delay_sec > 1.0:
                 pipeline_stats["late_recovered"] += 1
@@ -56,11 +59,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# 라우터 등록
+# 모든 라우터 등록
 app.include_router(dashboard_router)
 app.include_router(pipeline_router)
+app.include_router(aiops_router)
 
-# 센서 데이터 수신 웹소켓 엔드포인트
 @app.websocket("/ws/{device_id}")
 async def sensor_endpoint(websocket: WebSocket, device_id: str):
     await websocket.accept()
@@ -78,7 +81,8 @@ async def sensor_endpoint(websocket: WebSocket, device_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 [모듈러 통합 서버] 실행 중 (포트: 8000)")
+    print("🚀 [스마트 팩토리 1~5단계 통합 모듈러 서버] 실행 중 (포트: 8000)")
     print("   - 1~3단계 관제: http://localhost:8000/")
     print("   - 4단계 파이프라인: http://localhost:8000/pipeline")
+    print("   - 5단계 AIOps 에이전트: http://localhost:8000/aiops")
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")
