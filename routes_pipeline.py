@@ -14,11 +14,13 @@ PIPELINE_HTML = """
     <title>스마트 팩토리 - 4단계 파이프라인</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 25px; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         h1 { font-size: 24px; margin: 0; color: #10b981; }
         p { color: #94a3b8; margin: 5px 0 0 0; }
-        .nav-link { background: #334155; color: white; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+        .nav-group { display: flex; gap: 8px; align-items: center; }
+        .nav-link { background: #334155; color: white; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .nav-link:hover { background: #475569; }
+        .nav-link.active { background: #059669; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .card { background: #1e293b; border-radius: 12px; padding: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
         .card-title { font-size: 13px; color: #94a3b8; font-weight: bold; }
@@ -37,7 +39,11 @@ PIPELINE_HTML = """
             <h1>🌊 Step 4: Cloud Dataflow & BigQuery Pipeline</h1>
             <p>Event-Time 정렬 및 실시간 데이터 웨어하우스(DW) 적재 시뮬레이터</p>
         </div>
-        <a href="/" class="nav-link">👈 1~3단계 관제 대시보드 이동</a>
+        <div class="nav-group">
+            <a href="/" class="nav-link">1~3단계 관제</a>
+            <a href="/pipeline" class="nav-link active">4단계 파이프라인</a>
+            <a href="/aiops" class="nav-link">5단계 AIOps</a>
+        </div>
     </div>
 
     <div class="grid">

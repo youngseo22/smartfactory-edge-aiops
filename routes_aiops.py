@@ -1,6 +1,5 @@
 import asyncio
 import json
-from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
 from shared import aiops_logs, aiops_stats
@@ -12,15 +11,16 @@ AIOPS_HTML = """
 <html>
 <head>
     <meta charset="utf-8">
-    <title>아모레 스마트 팩토리 - 5단계 AIOps 에이전트</title>
+    <title>스마트 팩토리 - 5단계 AIOps 에이전트</title>
     <style>
         body { font-family: -apple-system, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 25px; }
-        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         h1 { font-size: 24px; margin: 0; color: #a855f7; }
         p { color: #94a3b8; margin: 5px 0 0 0; }
-        .nav-links { display: flex; gap: 10px; }
-        .nav-link { background: #334155; color: white; text-decoration: none; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: bold; }
+        .nav-group { display: flex; gap: 8px; align-items: center; }
+        .nav-link { background: #334155; color: white; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: bold; transition: background 0.2s; }
         .nav-link:hover { background: #475569; }
+        .nav-link.active { background: #7e22ce; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .card { background: #1e293b; border-radius: 12px; padding: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid #334155; }
         .card-title { font-size: 13px; color: #94a3b8; font-weight: bold; }
@@ -37,9 +37,10 @@ AIOPS_HTML = """
             <h1>🤖 Step 5: Vertex AI RAG Agent & Slack Alerting</h1>
             <p>설비 이상 징후 자동 진단, 사내 매뉴얼 검색(RAG) 및 슬랙 긴급 대응 브리핑</p>
         </div>
-        <div class="nav-links">
+        <div class="nav-group">
             <a href="/" class="nav-link">1~3단계 관제</a>
             <a href="/pipeline" class="nav-link">4단계 파이프라인</a>
+            <a href="/aiops" class="nav-link active">5단계 AIOps</a>
         </div>
     </div>
 
