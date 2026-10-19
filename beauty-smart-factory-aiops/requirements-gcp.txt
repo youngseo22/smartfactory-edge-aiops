@@ -1,5 +1,0 @@
-# ── Optional: 실제 GCP 연동 (USE_GCP=true) ─────────────
--r requirements.txt
-google-cloud-pubsub>=2.21
-google-cloud-bigquery>=3.25
-google-cloud-aiplatform>=1.60

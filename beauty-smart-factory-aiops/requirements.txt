@@ -1,6 +1,0 @@
-# ── Core (로컬 Mock 시연) ─────────────────────────────
-fastapi>=0.115
-uvicorn[standard]>=0.30
-pydantic>=2.7
-websockets>=13.0
-httpx>=0.27
