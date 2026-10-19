@@ -1,0 +1,52 @@
+[
+  {
+    "id": "MAN-042",
+    "page": 42,
+    "equipment": "COSMETIC_MOTOR",
+    "title": "캡 조립 구동 모터 베어링 마모 및 토크 조절 가이드",
+    "cause": "BEARING_WEAR_TORQUE_OVERLOAD",
+    "key_action": "Torque -0.5 Turn",
+    "keywords": ["모터", "진동", "vibration", "svm", "베어링", "마모", "토크", "torque", "캡", "조립", "과부하", "cap"],
+    "content": "캡 조립 구동 모터의 진동(SVM)이 7.0을 초과하면 베어링 마모 또는 토크 과다 설정을 의심한다. 1) 라인 속도를 70%로 감속한다. 2) 토크 조절 나사를 반시계 방향으로 0.5회전(Torque -0.5 Turn) 풀어 토크를 낮춘다. 3) 베어링 그리스 상태와 유격을 점검하고 마모 시 교체한다. 4) 재가동 후 SVM이 4.0 미만으로 내려오는지 확인한다."
+  },
+  {
+    "id": "MAN-017",
+    "page": 17,
+    "equipment": "CONVEYOR",
+    "title": "컨베이어 벨트 장력 및 정렬 점검",
+    "cause": "CONVEYOR_BELT_MISALIGNMENT",
+    "key_action": "Belt Tension Check",
+    "keywords": ["컨베이어", "벨트", "장력", "정렬", "conveyor", "belt", "공병"],
+    "content": "컨베이어 벨트 장력이 규정값을 벗어나면 공병이 밀리거나 정렬이 틀어진다. 장력 게이지로 측정하고 텐셔너 볼트를 조정한다. 롤러 편마모가 있으면 교체한다."
+  },
+  {
+    "id": "MAN-058",
+    "page": 58,
+    "equipment": "COLDCHAIN_ENV",
+    "title": "콜드체인 센서 노드 단절 및 온도 이상 대응",
+    "cause": "COLDCHAIN_NODE_DOWN",
+    "key_action": "Failover ZONE_B",
+    "keywords": ["콜드체인", "센서", "노드", "단절", "온도", "습도", "failover", "백업", "zone", "heartbeat", "coldchain"],
+    "content": "A구역 센서 노드가 3초 이상 무수신이면 네트워크 단절로 판단한다. 라우팅 테이블을 ZONE_B 백업 수집 경로로 전환하고 단절 구간 데이터를 백업 버퍼에서 재생해 유실을 방지한다. 온도가 8.0도를 넘으면 냉각기 상태를 현장 점검한다."
+  },
+  {
+    "id": "MAN-063",
+    "page": 63,
+    "equipment": "PUBSUB_QUEUE",
+    "title": "주문 폭주 시 큐 적체 해소 및 워커 확장",
+    "cause": "QUEUE_BACKLOG_SURGE",
+    "key_action": "Scale Workers x3",
+    "keywords": ["큐", "적체", "backlog", "주문", "폭주", "워커", "스케일", "scale", "pubsub", "dataflow", "병목"],
+    "content": "큐 적체량이 임계치 1,000건을 넘으면 소비 워커를 기본 2개에서 6개로 3배 확장한다. 적체가 500건 미만으로 내려가면 단계적으로 축소한다."
+  },
+  {
+    "id": "MAN-009",
+    "page": 9,
+    "equipment": "GENERAL",
+    "title": "설비 점검 시 안전 수칙",
+    "cause": "SAFETY_PROCEDURE",
+    "key_action": "Lockout / Tagout",
+    "keywords": ["안전", "점검", "lockout", "tagout", "보호구"],
+    "content": "설비 내부 점검 전에는 반드시 전원을 차단하고 잠금·표지(Lockout/Tagout)를 실시한다."
+  }
+]

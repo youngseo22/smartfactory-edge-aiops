@@ -1,0 +1,5 @@
+# AIOPS_MODE=gcp 일 때만 필요 (기본 requirements.txt 에 추가로 설치)
+-r requirements.txt
+google-cloud-pubsub>=2.21
+google-cloud-bigquery>=3.25
+google-cloud-aiplatform>=1.60
