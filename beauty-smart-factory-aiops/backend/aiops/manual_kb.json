@@ -1,0 +1,97 @@
+{
+  "documents": [
+    {
+      "doc_id": "AMR-MFG-MAN-2026",
+      "title": "화장품 캡 조립 라인 설비 매뉴얼",
+      "version": "v3.2"
+    },
+    {
+      "doc_id": "AMR-FUL-MAN-2026",
+      "title": "스마트 물류 콜드체인 운영 매뉴얼",
+      "version": "v1.8"
+    },
+    {
+      "doc_id": "AMR-SRE-RUN-2026",
+      "title": "데이터 파이프라인 SRE 런북",
+      "version": "v2.0"
+    }
+  ],
+  "chunks": [
+    {
+      "id": "MFG-p42",
+      "doc_id": "AMR-MFG-MAN-2026",
+      "page": "p.42",
+      "title": "캡 조립 구동 모터 베어링 마모 및 토크 조절 가이드",
+      "equipment": "COSMETIC_MOTOR",
+      "event_types": ["VIBRATION_ANOMALY"],
+      "tags": ["motor", "cap", "bearing", "vibration", "svm", "torque", "rpm", "모터", "캡", "베어링", "진동", "토크"],
+      "content": "진동 SVM 7.0 이상 지속 시 베어링 초기 마모로 판단한다. 캡 체결 토크 조절 노브를 반시계 방향으로 0.5회전(-0.5 Turn) 감소시켜 체결 과부하를 완화하고, 10분 이내 SVM 6.0 이하로 복귀하지 않으면 베어링(6204-2RS) 교체 작업을 예약한다. SVM 10.0 이상은 즉시 라인 정지.",
+      "action": {
+        "icon": "wrench",
+        "keyword": "Torque -0.5 Turn",
+        "secondary": "Bearing 6204-2RS",
+        "metric_key": "vibration_svm"
+      }
+    },
+    {
+      "id": "MFG-p43",
+      "doc_id": "AMR-MFG-MAN-2026",
+      "page": "p.43",
+      "title": "캡 조립 모터 윤활 주기 및 그리스 보충",
+      "equipment": "COSMETIC_MOTOR",
+      "event_types": [],
+      "tags": ["motor", "lubrication", "grease", "모터", "윤활", "그리스"],
+      "content": "구동 모터 베어링은 500시간 주기로 그리스를 보충한다. 소음 증가 시 윤활 상태를 우선 점검한다.",
+      "action": {"icon": "droplet", "keyword": "Grease 500h", "secondary": "", "metric_key": ""}
+    },
+    {
+      "id": "MFG-p18",
+      "doc_id": "AMR-MFG-MAN-2026",
+      "page": "p.18",
+      "title": "컨베이어 벨트 장력 점검",
+      "equipment": "CONVEYOR",
+      "event_types": [],
+      "tags": ["conveyor", "belt", "tension", "컨베이어", "벨트", "장력"],
+      "content": "컨베이어 벨트 장력이 기준 대비 10% 이상 저하되면 텐셔너를 1단 조정한다.",
+      "action": {"icon": "move", "keyword": "Tensioner +1", "secondary": "", "metric_key": ""}
+    },
+    {
+      "id": "FUL-p17",
+      "doc_id": "AMR-FUL-MAN-2026",
+      "page": "p.17",
+      "title": "항온항습 센서 노드 단절 시 백업 수집 전환 절차",
+      "equipment": "COLDCHAIN_ENV",
+      "event_types": ["NODE_DOWN"],
+      "tags": ["coldchain", "node", "heartbeat", "failover", "zone", "backup", "network", "콜드체인", "노드", "단절", "백업", "우회"],
+      "content": "구역 센서 노드의 Heartbeat 가 3초 이상 끊기면 게이트웨이 라우팅을 백업 수집 서버(ZONE_B)로 전환한다. 엣지 노드의 Store-and-Forward 버퍼를 재전송하여 데이터 공백을 복구한다.",
+      "action": {
+        "icon": "shuffle",
+        "keyword": "Failover → ZONE_B",
+        "secondary": "Replay Buffer",
+        "metric_key": "silent_s"
+      }
+    },
+    {
+      "id": "FUL-p21",
+      "doc_id": "AMR-FUL-MAN-2026",
+      "page": "p.21",
+      "title": "콜드체인 온도 이탈 대응 (2~8℃ 보관 기준)",
+      "equipment": "COLDCHAIN_ENV",
+      "event_types": ["TEMP_HIGH"],
+      "tags": ["coldchain", "temperature", "hvac", "zone", "콜드체인", "온도", "이탈", "항온"],
+      "content": "보관 온도가 8.0℃ 를 초과하면 HVAC 냉각 설정을 2℃ 낮추고, 15분 이상 지속 시 재고를 인접 구역으로 이동한다.",
+      "action": {"icon": "thermometer", "keyword": "HVAC -2℃", "secondary": "Move Stock", "metric_key": "temperature_c"}
+    },
+    {
+      "id": "SRE-p08",
+      "doc_id": "AMR-SRE-RUN-2026",
+      "page": "p.8",
+      "title": "Pub/Sub 백로그 급증 시 컨슈머 오토스케일",
+      "equipment": "PUBSUB",
+      "event_types": ["BACKLOG_HIGH"],
+      "tags": ["pubsub", "backlog", "queue", "scale", "worker", "pod", "dataflow", "큐", "적체", "스케일"],
+      "content": "구독 백로그가 1,000건을 초과하면 Dataflow 컨슈머 워커를 최대 3배(2→6)로 확장한다. 유입량이 기본 용량의 70% 이하로 떨어지고 백로그가 50건 미만으로 유지되면 축소한다.",
+      "action": {"icon": "container", "keyword": "Pods 2 → 6", "secondary": "300%", "metric_key": "backlog_count"}
+    }
+  ]
+}

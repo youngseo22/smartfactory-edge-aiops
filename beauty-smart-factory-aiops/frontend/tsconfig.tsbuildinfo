@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/usedashboard.ts","./src/components/coldchaingraphview.tsx","./src/components/factorycontainerview.tsx","./src/components/pipelinetopology.tsx","./src/components/remediationvisualdock.tsx","./src/components/scenariocontroller.tsx"],"version":"5.6.3"}

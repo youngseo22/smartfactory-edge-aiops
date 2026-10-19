@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-ink-950 font-sans text-slate-200 antialiased;
+  background-image:
+    radial-gradient(1200px 600px at 10% -10%, rgba(34, 211, 238, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, rgba(167, 139, 250, 0.12), transparent 60%),
+    radial-gradient(800px 500px at 50% 120%, rgba(45, 212, 191, 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* 미세 그리드 배경 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+@layer components {
+  .panel {
+    @apply relative overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900/70 shadow-inset backdrop-blur-xl;
+  }
+  .panel-industrial {
+    @apply relative overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-900/90 shadow-inset;
+    background-image:
+      linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, transparent 40%),
+      repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.015) 0 2px, transparent 2px 6px);
+  }
+  .rivet {
+    @apply absolute h-2 w-2 rounded-full bg-gradient-to-br from-slate-400 to-slate-700 shadow;
+  }
+  .panel-title {
+    @apply flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] font-semibold;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
+  .led {
+    @apply inline-block h-2.5 w-2.5 rounded-full;
+  }
+  .led-green {
+    @apply bg-neon-lime shadow-glow-lime;
+  }
+  .led-amber {
+    @apply bg-neon-amber shadow-glow-amber;
+  }
+  .led-red {
+    @apply animate-blink bg-neon-coral shadow-glow-red;
+  }
+  .led-off {
+    @apply bg-slate-700;
+  }
+}
+
+/* Recharts 다크 튜닝 */
+.recharts-cartesian-grid line {
+  stroke: rgba(148, 163, 184, 0.08);
+}
+.recharts-text {
+  fill: #64748b;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 8px;
+}
