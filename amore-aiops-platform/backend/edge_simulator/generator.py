@@ -92,7 +92,6 @@ class EdgeSimulator:
     def trigger_zone_a_fault(self) -> None:
         self.zone_a_heating = True
         self._heat_ticks = 0
-        self._temp_a = 9.2  # 시연용 즉각 반응 (임계치 8.0°C 즉각 돌파)
 
     def reset(self) -> None:
         self.motor_fault = False
@@ -157,10 +156,10 @@ class EdgeSimulator:
         # Zone A (Primary)
         if not self.zone_a_cut:
             if self.zone_a_heating:
-                self._temp_a += 1.0
+                self._temp_a = round(self._temp_a + 1.0, 1)
                 self._heat_ticks += 1
             else:
-                self._temp_a += (4.5 - self._temp_a) * 0.5 + self._rng.uniform(-0.15, 0.15)
+                self._temp_a = round(self._temp_a + (4.5 - self._temp_a) * 0.5 + self._rng.uniform(-0.15, 0.15), 1)
             out.append(self._cold("COLD_ZONE_A_01", "ZONE_A", self._temp_a))
             if self.zone_a_heating and self._heat_ticks >= settings.heat_ticks_before_cut:
                 self.zone_a_cut = True  # 이번 틱 이후 네트워크 단절

@@ -87,7 +87,7 @@ class Settings:
     svm_threshold: float = _f("SVM_THRESHOLD", 7.0)
     backlog_threshold: int = _i("BACKLOG_THRESHOLD", 1000)
     temp_threshold_c: float = _f("TEMP_THRESHOLD_C", 8.0)
-    heartbeat_timeout_s: float = _f("HEARTBEAT_TIMEOUT_S", 3.0)
+    heartbeat_timeout_s: float = _f("HEARTBEAT_TIMEOUT_S", 2.0)
 
     # ── 시뮬레이션 파라미터 ──────────────────────────────────────
     svm_normal: float = 2.8

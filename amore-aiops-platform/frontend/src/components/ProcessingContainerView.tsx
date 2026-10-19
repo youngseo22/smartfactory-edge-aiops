@@ -72,14 +72,14 @@ function Pod({ pod }: { pod: PodState }) {
           animate={{ width: `${pod.status === 'ACTIVE' || pod.status === 'TERMINATING' ? Math.max(6, pod.load_pct) : 0}%` }}
         />
       </div>
-      <span className="font-mono text-[10px] text-slate-400">
+      <span className="font-mono text-[10px] text-slate-300 font-medium">
         {pod.status === 'ACTIVE'
           ? `부하 ${Math.round(pod.load_pct)}%`
           : pod.status === 'STARTING'
             ? '프로비저닝'
             : pod.status === 'TERMINATING'
               ? '종료 드레인'
-              : 'Standby'}
+              : '대기 (Idle)'}
       </span>
     </motion.div>
   )
@@ -117,13 +117,13 @@ export default function ProcessingContainerView({ snap }: { snap: Snapshot }) {
 
       {/* ── 컨테이너 파드 랙 그리드 (6 Pods) ── */}
       <div className="rounded-lg border-2 border-slate-700 bg-slate-950/60 p-3">
-        <div className="mb-2 flex items-center justify-between text-xs text-slate-300">
+        <div className="mb-2.5 flex flex-wrap items-center justify-between gap-1.5 text-xs text-slate-300">
           <div className="flex items-center gap-1.5">
-            <Container size={15} className="text-sky-400" />
+            <Container size={15} className="text-sky-400 shrink-0" />
             <span className="font-bold text-slate-200 text-xs">스트림 처리 컨테이너 풀 (KEDA HPA)</span>
           </div>
-          <span className="font-mono text-[10px] text-slate-400">
-            소비 속도: <b className="text-sky-300">{snap.pipeline.drain_rate} msg/s</b>
+          <span className="font-mono text-[11px] text-slate-400">
+            소비 속도: <b className="text-sky-300 font-semibold">{snap.pipeline.drain_rate} msg/s</b>
           </span>
         </div>
 
@@ -133,8 +133,8 @@ export default function ProcessingContainerView({ snap }: { snap: Snapshot }) {
           ))}
         </div>
 
-        <div className="mt-3 flex items-center justify-between border-t border-slate-800/80 pt-2 text-[10px] text-slate-400">
-          <span className="truncate max-w-[200px]">※ 큐 적체 시 6대로 자동 스케일아웃</span>
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1.5 border-t border-slate-800/80 pt-2 text-[10px] text-slate-400">
+          <span className="text-slate-400 whitespace-nowrap">※ 큐 적체 시 6대로 자동 스케일아웃</span>
           <div className="flex items-center gap-2 font-mono">
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" />활성</span>
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-sky-400" />기동</span>

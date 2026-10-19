@@ -90,10 +90,6 @@ class Platform:
         elif sid == 2:  # 콜드체인 Zone A 온도 상승 + 노드 단절
             s.active_scenarios.add(2)
             self.edge.trigger_zone_a_fault()
-            s.push_event("TEMP_HIGH")
-            ev = AlertEvent(type="TEMP_HIGH", source="COLD_ZONE_A_01", zone="ZONE_A", value=9.2, threshold=settings.temp_threshold_c)
-            await self.engine.dispatch_now(ev)
-            self.hub.emit_alert(ev)
         elif sid == 3:  # 주문 폭증 (단독 — 큐 적체 & HPA 오토스케일아웃)
             s.active_scenarios.add(3)
             if self._burst:

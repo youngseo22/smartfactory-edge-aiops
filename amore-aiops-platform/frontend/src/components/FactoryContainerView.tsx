@@ -382,8 +382,8 @@ export default function FactoryContainerView({ snap }: { snap: Snapshot }) {
           ))}
         </div>
 
-        <div className="mt-2.5 flex items-center justify-between border-t border-slate-800/80 pt-2 text-[10px] text-slate-400">
-          <span>※ 큐 적체 발생 시 자동 확장(Scale-up)되며, 적체 해소 후 안전하게 순차 회수(Scale-in)합니다.</span>
+        <div className="mt-2.5 flex flex-wrap items-center justify-between gap-1.5 border-t border-slate-800/80 pt-2 text-[10px] text-slate-400">
+          <span className="whitespace-nowrap">※ 큐 적체 발생 시 자동 확장(Scale-up)되며, 해소 후 자동 회수(Scale-in)합니다.</span>
           <div className="flex items-center gap-2 font-mono">
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-emerald-400" />활성</span>
             <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-sky-400" />기동 중</span>
