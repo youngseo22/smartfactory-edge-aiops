@@ -35,6 +35,18 @@ def _load_dotenv_if_exists() -> None:
 
 _load_dotenv_if_exists()
 
+# GOOGLE_APPLICATION_CREDENTIALS 설정 (프로젝트 루트의 gcp-key.json 최우선 적용)
+_root_dir = Path(__file__).resolve().parents[1]
+_local_key = _root_dir / "gcp-key.json"
+if _local_key.is_file():
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(_local_key.resolve())
+else:
+    _cred_env = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if _cred_env:
+        _cred_path = Path(_cred_env)
+        if not _cred_path.is_absolute():
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str((_root_dir / _cred_path).resolve())
+
 
 def _f(name: str, default: float) -> float:
     val = os.getenv(name)
