@@ -12,12 +12,24 @@ export default function App() {
   return (
     <div className="mx-auto flex min-h-screen max-w-[1400px] flex-col gap-4 p-4">
       {/* 헤더 + 시나리오 컨트롤러 */}
-      <header className="panel flex items-center justify-between px-4 py-3">
+      <header className="panel flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <Factory className="text-sky-400" size={26} />
-          <h1 className="text-lg font-extrabold tracking-wide">DIGITAL TWIN &amp; AIOPS CENTER</h1>
-          <span className={`h-2.5 w-2.5 rounded-full ${connected ? 'bg-emerald-400' : 'animate-blink bg-red-500'}`} />
-          {snap && <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-[11px] uppercase text-slate-400">{snap.mode}</span>}
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-500/10 border border-sky-500/30">
+            <Factory className="text-sky-400" size={24} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-black tracking-wide text-white">
+                AMOREPACIFIC AIOps &amp; DIGITAL TWIN
+              </h1>
+              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                connected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/15 text-red-300 border border-red-500/30'
+              }`}>
+                <span className={`h-2 w-2 rounded-full ${connected ? 'bg-emerald-400' : 'animate-blink bg-red-500'}`} />
+                {connected ? '실시간 연동 LIVE' : '연결 끊김 DISCONNECTED'}
+              </span>
+            </div>
+          </div>
         </div>
         <ScenarioController active={snap?.active_scenarios ?? []} />
       </header>

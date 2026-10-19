@@ -17,8 +17,8 @@ export default {
         },
       },
       animation: {
-        belt: 'belt 0.8s linear infinite',
-        'belt-fast': 'belt 0.4s linear infinite',
+        belt: 'belt 0.46s linear infinite',
+        'belt-fast': 'belt 0.22s linear infinite',
         blink: 'blink 0.7s ease-in-out infinite',
       },
     },

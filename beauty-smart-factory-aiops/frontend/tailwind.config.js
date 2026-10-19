@@ -43,6 +43,7 @@ export default {
       animation: {
         conveyor: "conveyor linear infinite",
         belt: "belt .6s linear infinite",
+        "belt-fast": "belt .3s linear infinite",
         shake: "shake .12s linear infinite",
         blink: "blink 1s ease-in-out infinite",
         dash: "dash 0.8s linear infinite",

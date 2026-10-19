@@ -15,9 +15,8 @@ export const FactoryContainerView: React.FC<Props> = ({ factory }) => {
   const rpm = motor?.rpm ?? 1200;
   const isVibrating = svm >= (motor?.threshold ?? 7.0);
   const isCritical = svm >= (motor?.critical ?? 10.0);
-
-  // 컨베이어 벨트 공병 배열
-  const bottles = [1, 2, 3, 4, 5, 6, 7];
+  const beltCls = isVibrating ? "animate-belt-fast" : "animate-belt";
+  const bottleDur = isVibrating ? 3 : 6;
 
   return (
     <div className="panel-industrial p-4 flex flex-col gap-4">
@@ -125,29 +124,23 @@ export const FactoryContainerView: React.FC<Props> = ({ factory }) => {
           </div>
         </div>
 
-        {/* Conveyor Belt Track with moving bottles */}
-        <div className="relative h-10 w-full bg-slate-900 rounded-lg border border-slate-800 overflow-hidden flex items-center">
-          {/* Moving conveyor pattern background */}
-          <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#38bdf8_0,#38bdf8_10px,transparent_10px,transparent_20px)] animate-belt" />
-
-          {/* Animated Cosmetic Bottles (🧴) */}
-          <div className="relative w-full h-full flex items-center justify-between px-2">
-            {bottles.map((b, i) => (
-              <motion.div
-                key={b}
-                className="text-lg select-none filter drop-shadow"
-                animate={{ x: [0, 40] }}
-                transition={{
-                  repeat: Infinity,
-                  duration: isVibrating ? 0.4 : 1.2,
-                  ease: "linear",
-                  delay: i * 0.15,
-                }}
-              >
-                🧴
-              </motion.div>
-            ))}
-          </div>
+        {/* ── 컨베이어 벨트 ── */}
+        <div className="relative h-14 overflow-hidden rounded-lg border-2 border-slate-700 bg-slate-950">
+          <div
+            className={`absolute inset-x-0 bottom-0 h-4 ${beltCls}`}
+            style={{ background: "repeating-linear-gradient(90deg,#334155 0 12px,#1e293b 12px 24px)" }}
+          />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <motion.span
+              key={`${i}-${bottleDur}`}
+              className="absolute bottom-3 text-2xl select-none"
+              initial={{ left: "-8%" }}
+              animate={{ left: "104%" }}
+              transition={{ duration: bottleDur, repeat: Infinity, ease: "linear", delay: (i * bottleDur) / 5 }}
+            >
+              🧴
+            </motion.span>
+          ))}
         </div>
       </div>
 
