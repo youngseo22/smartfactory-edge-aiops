@@ -23,9 +23,10 @@ KB_PATH = Path(__file__).with_name("manual_kb.json")
 
 QUERY_BY_EVENT = {
     "VIBRATION_HIGH": "모터 진동 vibration svm 베어링 마모 토크 torque 캡 조립 과부하",
+    "CONVEYOR_ANOMALY": "컨베이어 벨트 급가속 인버터 주파수 라인 진동 헌팅 overspeed",
     "BACKLOG_HIGH": "큐 적체 backlog 주문 폭주 워커 scale 병목",
     "NODE_DOWN": "콜드체인 센서 노드 단절 heartbeat failover 백업 zone",
-    "TEMP_HIGH": "콜드체인 온도 습도 이상 zone",
+    "TEMP_HIGH": "콜드체인 온도 습도 이상 zone 냉각기 콤프레셔",
 }
 
 
@@ -83,7 +84,7 @@ class LocalRagAgent:
     def __init__(self) -> None:
         self.kb = ManualKnowledgeBase()
 
-    async def diagnose(self, event: AlertEvent, context: dict) -> Diagnosis:
+    def diagnose_local(self, event: AlertEvent, context: dict) -> Diagnosis:
         query = QUERY_BY_EVENT.get(event.type, event.type)
         doc, score = self.kb.search(query, top_k=1)[0]
         return Diagnosis(
@@ -94,6 +95,9 @@ class LocalRagAgent:
             confidence=round(min(0.99, score / (score + 4.0)), 2),
             summary=doc["content"],
         )
+
+    async def diagnose(self, event: AlertEvent, context: dict) -> Diagnosis:
+        return self.diagnose_local(event, context)
 
 
 class VertexRagAgent(LocalRagAgent):
@@ -107,20 +111,23 @@ class VertexRagAgent(LocalRagAgent):
         vertexai.init(project=settings.gcp_project, location=settings.vertex_location)
         self._model = GenerativeModel(settings.vertex_model)
 
+    async def enrich_with_gemini(self, base: Diagnosis, event: AlertEvent, context: dict) -> Diagnosis:
+        prompt = (
+            "너는 스마트팩토리 AIOps 에이전트다. 아래 매뉴얼 발췌와 센서 컨텍스트로 원인을 진단하고 "
+            'JSON {"cause": str, "key_action": str, "summary": str} 만 출력하라.\n'
+            f"[매뉴얼 p.{base.manual_page}] {base.manual_title}\n{base.summary}\n"
+            f"[이벤트] {event.model_dump()}\n[컨텍스트] {context}"
+        )
+        resp = await self._model.generate_content_async(
+            prompt, generation_config={"response_mime_type": "application/json"}
+        )
+        data = json.loads(resp.text)
+        return base.model_copy(update={k: data[k] for k in ("cause", "key_action", "summary") if k in data})
+
     async def diagnose(self, event: AlertEvent, context: dict) -> Diagnosis:
-        base = await super().diagnose(event, context)
+        base = self.diagnose_local(event, context)
         try:
-            prompt = (
-                "너는 스마트팩토리 AIOps 에이전트다. 아래 매뉴얼 발췌와 센서 컨텍스트로 원인을 진단하고 "
-                'JSON {"cause": str, "key_action": str, "summary": str} 만 출력하라.\n'
-                f"[매뉴얼 p.{base.manual_page}] {base.manual_title}\n{base.summary}\n"
-                f"[이벤트] {event.model_dump()}\n[컨텍스트] {context}"
-            )
-            resp = await self._model.generate_content_async(
-                prompt, generation_config={"response_mime_type": "application/json"}
-            )
-            data = json.loads(resp.text)
-            return base.model_copy(update={k: data[k] for k in ("cause", "key_action", "summary") if k in data})
+            return await self.enrich_with_gemini(base, event, context)
         except Exception:
             log.exception("Vertex AI 호출 실패 → 로컬 진단 결과 사용")
             return base

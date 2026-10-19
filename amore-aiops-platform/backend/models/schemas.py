@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, model_validator
 T = TypeVar("T")
 
 Domain = Literal["FACTORY", "FULFILLMENT", "ORDER"]
-AlertType = Literal["VIBRATION_HIGH", "BACKLOG_HIGH", "NODE_DOWN", "TEMP_HIGH"]
+AlertType = Literal["VIBRATION_HIGH", "CONVEYOR_ANOMALY", "BACKLOG_HIGH", "NODE_DOWN", "TEMP_HIGH"]
 
 
 def utc_now_iso() -> str:
@@ -115,7 +115,7 @@ class SvmPoint(BaseModel):
 # ─────────────────────────────────────────────────────────────
 class PodState(BaseModel):
     id: int
-    status: Literal["ACTIVE", "STARTING", "STANDBY"] = "STANDBY"
+    status: Literal["ACTIVE", "STARTING", "TERMINATING", "STANDBY"] = "STANDBY"
     load_pct: int = 0
 
 

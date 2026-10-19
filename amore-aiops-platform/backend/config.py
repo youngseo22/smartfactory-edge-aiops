@@ -106,7 +106,7 @@ class Settings:
     worker_start_stagger_s: float = 0.35
     window_s: float = 1.0
     allowed_lateness_s: float = 2.0
-    auto_scale_down_after_s: float = _f("AUTO_SCALE_DOWN_AFTER_S", 12.0)  # 0 = 비활성
+    auto_scale_down_after_s: float = _f("AUTO_SCALE_DOWN_AFTER_S", 5.0)  # 0 = 비활성, 큐 해소 5초 후 정상 복귀
 
     # ── 대시보드 ────────────────────────────────────────────────
     broadcast_interval_s: float = 0.5

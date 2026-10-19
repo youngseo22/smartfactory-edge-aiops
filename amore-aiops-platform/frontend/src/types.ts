@@ -14,7 +14,7 @@ export interface SvmPoint {
 
 export interface PodState {
   id: number
-  status: 'ACTIVE' | 'STARTING' | 'STANDBY'
+  status: 'ACTIVE' | 'STARTING' | 'TERMINATING' | 'STANDBY'
   load_pct: number
 }
 

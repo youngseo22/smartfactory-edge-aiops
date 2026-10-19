@@ -167,9 +167,18 @@ class DataflowWorkerPool:
             if gen != self._gen:
                 return
             self._spawn(wid)
-        for wid in sorted(self._workers, reverse=True):
-            if wid > n:
-                self._despawn(wid)
+        # 2. Scale-Down: 6 → 2 점진적 순차 회수 (Graceful Staggered Drain)
+        to_remove = [wid for wid in sorted(self._workers, reverse=True) if wid > n]
+        for wid in to_remove:
+            if gen != self._gen:
+                return
+            pod = self.store.worker_pods[wid - 1]
+            pod.status = "TERMINATING"
+            pod.load_pct = max(0, pod.load_pct // 2)
+            await asyncio.sleep(settings.worker_start_stagger_s)
+            if gen != self._gen:
+                return
+            self._despawn(wid)
 
     def reset(self) -> None:
         self._gen += 1

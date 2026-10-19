@@ -32,9 +32,9 @@ class SlackNotifier:
         if not settings.slack_webhook_url:
             return
         body = json.dumps({
-            "text": f":rotating_light: {card.cause} — Manual p.{card.manual_page}: {card.key_action}",
-        }).encode()
-        req = urllib.request.Request(settings.slack_webhook_url, body, {"Content-Type": "application/json"})
+            "text": f"🚨 [{card.severity}] {card.cause}\n🔧 SOP 조치: {card.key_action} (매뉴얼 p.{card.manual_page})\n📊 진단 신뢰도: {int(card.confidence * 100)}%",
+        }, ensure_ascii=False).encode("utf-8")
+        req = urllib.request.Request(settings.slack_webhook_url, body, {"Content-Type": "application/json; charset=utf-8"})
         try:
             await asyncio.to_thread(urllib.request.urlopen, req, None, 5)
         except Exception:
@@ -48,19 +48,54 @@ class Remediator:
                  pool: DataflowWorkerPool, gateway: IngestionGateway) -> None:
         self.store, self.rag, self.notifier, self.pool, self.gateway = store, rag, notifier, pool, gateway
 
-    # [Action A] SLACK_ALERT — RAG 로 매뉴얼 검색 후 토크 조절 가이드 알림
+    # [Action A] SLACK_ALERT — 로컬 RAG 로 즉시 알림 반영(0.01초) 후 Vertex AI 로 백그라운드 보강
     async def slack_alert(self, event: AlertEvent) -> None:
         m = self.store.motor
-        diag = await self.rag.diagnose(event, {"svm": m.svm, "torque_nm": m.torque_nm, "rpm": m.rpm})
+        ctx = {"svm": m.svm, "torque_nm": m.torque_nm, "rpm": m.rpm, "event_type": event.type}
+        if event.zone:
+            ctx["zone"] = event.zone
+
+        # 1. Fast Path: 로컬 지식베이스(BM25) 즉각 검색 (1ms 이내)
+        if hasattr(self.rag, "diagnose_local"):
+            diag = self.rag.diagnose_local(event, ctx)
+        else:
+            diag = await self.rag.diagnose(event, ctx)
+
+        val = event.value if event.value is not None else (m.svm if event.type == "VIBRATION_HIGH" else 0.0)
+        ch = (
+            "#aiops-capping-line" if event.type == "VIBRATION_HIGH"
+            else "#aiops-conveyor-line" if event.type == "CONVEYOR_ANOMALY"
+            else "#aiops-coldchain-zone"
+        )
         card = SlackCard(
-            severity="CRIT",  # VIBRATION_HIGH 는 임계치(7.0) 초과 = 위험 수준
+            channel=ch,
+            severity="CRIT" if event.type in ("VIBRATION_HIGH", "NODE_DOWN") else "WARN",
             manual_page=diag.manual_page, manual_title=diag.manual_title,
             key_action=diag.key_action, cause=diag.cause, confidence=diag.confidence,
-            svm=round(event.value or m.svm, 1), ts=epoch_ms(),
+            svm=round(val, 1), ts=epoch_ms(),
         )
+        # 즉시 상태 저장 및 프론트엔드/관리자 알림 트리거
         self.store.remediation.slack = card
         self.store.push_event("ACTION_SLACK")
         await self.notifier.send(card)
+
+        # 2. Async Path: Vertex AI (Gemini) 모델이 있는 경우 비동기 백그라운드로 보강
+        if hasattr(self.rag, "enrich_with_gemini"):
+            asyncio.create_task(self._enrich_slack_card(card, diag, event, ctx, ch))
+
+    async def _enrich_slack_card(self, original_card: SlackCard, base_diag, event: AlertEvent, ctx: dict, ch: str) -> None:
+        try:
+            enriched = await self.rag.enrich_with_gemini(base_diag, event, ctx)
+            current = self.store.remediation.slack
+            # 여전히 동일 채널/장애의 카드인 경우 최신 LLM 진단 결과로 보강 업데이트
+            if current and current.channel == ch:
+                updated_card = original_card.model_copy(update={
+                    "cause": enriched.cause,
+                    "confidence": enriched.confidence,
+                })
+                self.store.remediation.slack = updated_card
+        except Exception:
+            log.warning("Async Gemini enrichment skipped or failed")
 
     # [Action B] CONTAINER_SCALE_UP — 워커 2 → 6
     async def scale_up(self, event: AlertEvent) -> None:
@@ -93,7 +128,7 @@ class AIOpsEngine:
     def __init__(self, store: StateStore, broker: Broker, remediator: Remediator, pool: DataflowWorkerPool) -> None:
         self.store, self.broker, self.rem, self.pool = store, broker, remediator, pool
         self._tasks: set[asyncio.Task] = set()
-        self._last_slack = float("-inf")
+        self._last_slack_by_type: dict[str, float] = {}
 
     def _spawn(self, coro: Coroutine) -> None:
         t = asyncio.create_task(coro)
@@ -105,21 +140,35 @@ class AIOpsEngine:
         if not t.cancelled() and t.exception():
             log.error("remediation action failed", exc_info=t.exception())
 
-    def _dispatch(self, ev: AlertEvent) -> None:
+    async def dispatch_now(self, ev: AlertEvent) -> None:
         rem = self.store.remediation
         now = time.monotonic()
+        last = self._last_slack_by_type.get(ev.type, float("-inf"))
+
+        # 1. 캡핑 모터 진동 과부하
         if ev.type == "VIBRATION_HIGH":
-            if now - self._last_slack > SLACK_COOLDOWN_S:
-                self._last_slack = now
-                self._spawn(self.rem.slack_alert(ev))
+            if now - last > 30.0:
+                self._last_slack_by_type[ev.type] = now
+                await self.rem.slack_alert(ev)
+        # 2. 컨베이어 인버터 이상 및 라인 진동
+        elif ev.type == "CONVEYOR_ANOMALY":
+            if now - last > 30.0:
+                self._last_slack_by_type[ev.type] = now
+                await self.rem.slack_alert(ev)
+        # 3. 큐 백로그 급증
         elif ev.type == "BACKLOG_HIGH":
             if not (rem.scale and rem.scale.status == "RUNNING"):
-                self._spawn(self.rem.scale_up(ev))
-        elif ev.type == "NODE_DOWN":
-            # 서빙 중인 구역이 끊겼을 때만 Failover
-            if ev.zone and ev.zone == self.store.routing.active_zone:
-                self._spawn(self.rem.node_failover(ev))
-        # TEMP_HIGH 는 Gateway 가 Zone 상태(WARNING)로 이미 표시 — 별도 액션 없음
+                await self.rem.scale_up(ev)
+        # 4. 콜드체인 노드 단절 및 과온
+        elif ev.type in ("NODE_DOWN", "TEMP_HIGH"):
+            if ev.type == "NODE_DOWN" and ev.zone and ev.zone == self.store.routing.active_zone:
+                await self.rem.node_failover(ev)
+            if now - last > 30.0:
+                self._last_slack_by_type[ev.type] = now
+                await self.rem.slack_alert(ev)
+
+    def _dispatch(self, ev: AlertEvent) -> None:
+        self._spawn(self.dispatch_now(ev))
 
     async def run(self) -> None:
         while True:
@@ -142,6 +191,8 @@ class AIOpsEngine:
                 if time.monotonic() - low_since >= settings.auto_scale_down_after_s:
                     await self.pool.scale_to(settings.base_workers)
                     self.store.remediation.scale = None
+                    self.store.active_scenarios.discard(3)
+                    self.store.remove_events("BACKLOG_HIGH", "ACTION_SCALE")
                     low_since = None
             else:
                 low_since = None
@@ -150,6 +201,6 @@ class AIOpsEngine:
         for t in list(self._tasks):
             t.cancel()
         self._tasks.clear()
-        self._last_slack = float("-inf")
+        self._last_slack_by_type.clear()
         r = self.store.remediation
         r.slack = r.scale = r.failover = None

@@ -76,11 +76,18 @@ async def state():
 
 @app.post("/api/scenario/{scenario_id}")
 async def trigger_scenario(scenario_id: int):
-    """0 = Normal · 1 = 모터 불량 · 2 = 콜드체인 이상 · 3 = 주문 폭증 · 4 = 모터 교체 · 5 = Zone A 복구"""
-    if scenario_id not in (0, 1, 2, 3, 4, 5):
-        raise HTTPException(status_code=404, detail="scenario must be between 0 and 5")
+    """0 = Normal · 1 = 모터 불량 · 2 = 콜드체인 이상 · 3 = 주문 폭증 · 4 = 모터 교체 · 5 = Zone A 복구 · 6 = 라인 진동(벨트 급가속) · 7 = 라인 안정화"""
+    if scenario_id not in (0, 1, 2, 3, 4, 5, 6, 7):
+        raise HTTPException(status_code=404, detail="scenario must be between 0 and 7")
     active = await app.state.platform.apply_scenario(scenario_id)
     return {"ok": True, "scenario": scenario_id, "active": active}
+
+
+@app.post("/api/motor/svm/step")
+async def step_motor_svm(delta: float = 1.5):
+    """SVM 진동치를 delta(기본 1.5)만큼 증가/감소. 7.0 초과 시 자동 인터록 발동."""
+    val = await app.state.platform.step_motor_svm(delta)
+    return {"ok": True, "svm": val, "active": sorted(app.state.platform.store.active_scenarios)}
 
 
 @app.websocket("/ws/ingest")

@@ -44,6 +44,10 @@ export function useDashboard() {
   return { snap, connected }
 }
 
-export async function triggerScenario(id: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
+export async function triggerScenario(id: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7): Promise<void> {
   await fetch(`/api/scenario/${id}`, { method: 'POST' })
+}
+
+export async function stepMotorSvm(delta: number = 1.5): Promise<void> {
+  await fetch(`/api/motor/svm/step?delta=${delta}`, { method: 'POST' })
 }

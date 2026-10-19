@@ -68,17 +68,31 @@ class EdgeSimulator:
         self._heat_ticks = 0
         # 내부 상태
         self._svm = settings.svm_normal
+        self._target_svm = settings.svm_normal
         self._temp_a = 4.5
         self._temp_b = 4.2
         self._tasks: list[asyncio.Task] = []
 
     # ── 시나리오 제어 ───────────────────────────────────────
+    def step_motor_svm(self, delta: float = 1.5) -> float:
+        """SVM 진동 수치를 delta(기본 1.5)만큼 단계적으로 증가/감소. 8.5로 치솟지 않고 설정치 유지."""
+        self._svm = round(min(10.0, max(0.5, self._svm + delta)), 2)
+        self._target_svm = self._svm
+        if self._svm >= settings.svm_threshold:
+            self.motor_fault = True
+        else:
+            self.motor_fault = False
+        return self._svm
+
     def trigger_motor_fault(self) -> None:
         self.motor_fault = True
+        self._svm = settings.svm_fault
+        self._target_svm = settings.svm_fault
 
     def trigger_zone_a_fault(self) -> None:
         self.zone_a_heating = True
         self._heat_ticks = 0
+        self._temp_a = 9.2  # 시연용 즉각 반응 (임계치 8.0°C 즉각 돌파)
 
     def reset(self) -> None:
         self.motor_fault = False
@@ -86,12 +100,14 @@ class EdgeSimulator:
         self.zone_a_cut = False
         self._heat_ticks = 0
         self._temp_a = 4.5
-        self._svm = settings.svm_normal  # 리셋 시 진동 즉시 정상화 (서서히 내려오며 재경보되는 것 방지)
+        self._svm = settings.svm_normal
+        self._target_svm = settings.svm_normal
 
     def reset_motor(self) -> None:
         """모터 정비/교체 완료: 모터 결함 단독 해제 및 진동치 즉시 정상화."""
         self.motor_fault = False
         self._svm = settings.svm_normal
+        self._target_svm = settings.svm_normal
 
     def reset_zone_a(self) -> None:
         """Zone A 냉각기 수리 및 네트워크 복구 완료: 온도 4.5°C 복구 및 통신 재개."""
@@ -117,22 +133,22 @@ class EdgeSimulator:
 
     # ── 센서 루프 ───────────────────────────────────────────
     def _motor_payload(self) -> dict:
-        target = settings.svm_fault if self.motor_fault else settings.svm_normal
-        delta = target - self._svm
-        step = max(-0.8, min(1.8, delta))
-        noise = self._rng.uniform(-0.1, 0.1) if self.motor_fault else self._rng.uniform(-0.25, 0.25)
-        self._svm = max(0.5, self._svm + step + noise) if abs(delta) > 0.4 else max(0.5, target + noise)
-        svm = round(self._svm, 2)
+        delta = self._target_svm - self._svm
+        if abs(delta) > 0.05:
+            step = max(-0.5, min(0.5, delta))
+            self._svm += step
+        noise = self._rng.uniform(-0.04, 0.04)
+        current_svm = round(max(0.5, self._svm + noise), 2)
         return {
             "sensor_id": "MOTOR_LINE_A_01",
             "domain": "FACTORY",
             "timestamp": utc_now_iso(),
             "metrics": {
-                "vibration_svm": svm,
-                "torque_nm": round(3.2 + (svm - 2.8) * 0.18, 2),
+                "vibration_svm": current_svm,
+                "torque_nm": round(3.2 + (current_svm - 2.8) * 0.18, 2),
                 "rpm": round(1200 + self._rng.uniform(-8, 8) * (4 if self.motor_fault else 1)),
             },
-            "status": "WARNING" if svm >= settings.svm_threshold else "NORMAL",
+            "status": "WARNING" if current_svm >= settings.svm_threshold else "NORMAL",
         }
 
     def _cold_payloads(self) -> list[dict]:
@@ -186,3 +202,4 @@ class EdgeSimulator:
 
     async def run(self) -> None:
         await asyncio.gather(self._motor_loop(), self._cold_loop())
+

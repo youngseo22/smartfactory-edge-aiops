@@ -5,7 +5,7 @@
     "equipment": "COSMETIC_MOTOR",
     "title": "캡 조립 구동 모터 베어링 마모 및 토크 조절 가이드",
     "cause": "BEARING_WEAR_TORQUE_OVERLOAD",
-    "key_action": "Torque -0.5 Turn",
+    "key_action": "Torque -0.5 Turn (토크 조절 나사 0.5회전 감속)",
     "keywords": ["모터", "진동", "vibration", "svm", "베어링", "마모", "토크", "torque", "캡", "조립", "과부하", "cap"],
     "content": "캡 조립 구동 모터의 진동(SVM)이 7.0을 초과하면 베어링 마모 또는 토크 과다 설정을 의심한다. 1) 라인 속도를 70%로 감속한다. 2) 토크 조절 나사를 반시계 방향으로 0.5회전(Torque -0.5 Turn) 풀어 토크를 낮춘다. 3) 베어링 그리스 상태와 유격을 점검하고 마모 시 교체한다. 4) 재가동 후 SVM이 4.0 미만으로 내려오는지 확인한다."
   },
@@ -18,6 +18,16 @@
     "key_action": "Belt Tension Check",
     "keywords": ["컨베이어", "벨트", "장력", "정렬", "conveyor", "belt", "공병"],
     "content": "컨베이어 벨트 장력이 규정값을 벗어나면 공병이 밀리거나 정렬이 틀어진다. 장력 게이지로 측정하고 텐셔너 볼트를 조정한다. 롤러 편마모가 있으면 교체한다."
+  },
+  {
+    "id": "MAN-018",
+    "page": 18,
+    "equipment": "CONVEYOR",
+    "title": "컨베이어 인버터 주파수 헌팅 및 비정상 과속 점검",
+    "cause": "CONVEYOR_INVERTER_OVERSPEED",
+    "key_action": "Inverter PID Sync (1.0m/s)",
+    "keywords": ["컨베이어", "벨트", "급가속", "인버터", "주파수", "라인", "진동", "conveyor", "overspeed", "vibration", "hunting"],
+    "content": "컨베이어 벨트 이송 속도가 2.0m/s 이상으로 급가속되거나 라인 진동이 발생하면 인버터 주파수 헌팅을 점검한다. 1) 인버터 제어반 통신 상태를 확인한다. 2) PID 제어 게인을 리셋하고 기준 주파수(1.0m/s)로 재동기화한다. 3) 가감속 시상수를 1.5초로 보정한다."
   },
   {
     "id": "MAN-058",

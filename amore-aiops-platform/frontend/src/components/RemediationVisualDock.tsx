@@ -58,7 +58,7 @@ function SlackWidget({ snap }: { snap: Snapshot }) {
     <Card
       actionNo="ACTION 1"
       title="Slack 알림 &amp; SOP RAG"
-      subtext="진동 이상 시 정비 매뉴얼 자동 추천"
+      subtext="설비·콜드체인 이상 시 SOP 매뉴얼 자동 전송"
       icon={<MessageSquare size={18} />}
       active={!!card}
       tone="border-violet-500 shadow-lg shadow-violet-500/10"
@@ -78,30 +78,43 @@ function SlackWidget({ snap }: { snap: Snapshot }) {
                 <Hash size={13} />
                 {card.channel.replace('#', '')}
               </span>
-              <motion.span animate={{ rotate: [0, -18, 18, -12, 12, 0] }} transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 1.5 }}>
-                <Bell size={14} />
-              </motion.span>
+              <div className="flex items-center gap-1.5">
+                <span className={`rounded px-1.5 py-0.2 text-[9px] font-bold ${card.severity === 'CRIT' ? 'bg-red-500 text-white' : 'bg-amber-400 text-black'}`}>
+                  {card.severity}
+                </span>
+                <motion.span animate={{ rotate: [0, -18, 18, -12, 12, 0] }} transition={{ duration: 0.8, repeat: Infinity, repeatDelay: 1.5 }}>
+                  <Bell size={14} />
+                </motion.span>
+              </div>
             </div>
             <div className="flex gap-2.5 p-2.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-violet-600 text-white">
                 <Bot size={20} />
               </div>
-              <div className="flex min-w-0 flex-col gap-1.5">
-                <span className="flex w-fit items-center gap-1 rounded bg-sky-500/20 px-1.5 py-0.5 text-[11px] font-semibold text-sky-300">
-                  <BookOpen size={12} />
-                  매뉴얼 참조 p.{card.manual_page}
-                </span>
+              <div className="flex min-w-0 flex-col gap-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="flex w-fit items-center gap-1 rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-sky-300">
+                    <BookOpen size={11} />
+                    SOP p.{card.manual_page}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono truncate max-w-[130px]">
+                    {card.manual_title}
+                  </span>
+                </div>
                 <span className="flex items-center gap-1.5 text-sm font-extrabold text-amber-300">
                   <motion.span animate={{ rotate: [0, -25, 0] }} transition={{ duration: 1.2, repeat: Infinity }}>
-                    <Wrench size={16} />
+                    <Wrench size={15} />
                   </motion.span>
                   {card.key_action}
                 </span>
-                <div className="flex items-center gap-2">
+                <p className="text-[10px] text-slate-300 line-clamp-1">
+                  {card.cause}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
                   <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-700">
                     <div className="h-full bg-emerald-400" style={{ width: `${Math.round(card.confidence * 100)}%` }} />
                   </div>
-                  <span className="font-mono text-[10px] text-emerald-400">
+                  <span className="font-mono text-[9px] text-emerald-400">
                     신뢰도 {Math.round(card.confidence * 100)}%
                   </span>
                 </div>
@@ -113,7 +126,7 @@ function SlackWidget({ snap }: { snap: Snapshot }) {
             <Bot size={34} className="opacity-40" />
             <span className="text-xs font-medium text-slate-400">모니터링 대기 중</span>
             <p className="text-[11px] leading-tight text-slate-500">
-              모터 진동 이상 감지 시 엔지니어 채널로 정비 가이드가 자동 발송됩니다.
+              모터·컨베이어·콜드체인 이상 감지 시 관리자 채널로 정비 가이드가 자동 발송됩니다.
             </p>
           </div>
         )}
@@ -142,6 +155,7 @@ function ScaleWidget({ snap }: { snap: Snapshot }) {
   const sc = snap.remediation.scale
   const active = snap.worker_pods.filter((p) => p.status === 'ACTIVE').length
   const starting = snap.worker_pods.filter((p) => p.status === 'STARTING').length
+  const terminating = snap.worker_pods.filter((p) => p.status === 'TERMINATING').length
   const pct = snap.queue.throughput_pct
 
   return (
@@ -157,17 +171,28 @@ function ScaleWidget({ snap }: { snap: Snapshot }) {
         <div className="flex flex-col items-center gap-2.5 w-full">
           <div className="flex items-center justify-between w-full px-2 text-[11px] text-slate-400">
             <span>이전 파드: <b className="text-slate-200 font-mono">{sc.from_pods}개</b></span>
-            <span>확장 파드: <b className="text-sky-300 font-mono">{active + starting}개</b></span>
+            <span>
+              가동 파드: <b className="text-sky-300 font-mono">{active + starting + terminating}개</b>
+              {terminating > 0 && <span className="text-amber-400 text-[10px] ml-1">({terminating} 축소 중)</span>}
+            </span>
           </div>
 
           <div className="flex flex-col items-center gap-1.5 bg-slate-950/60 p-2 rounded-lg border border-slate-800 w-full">
             <PodRow filled={sc ? sc.from_pods : active} tone="border-slate-400 bg-slate-500/60" />
             <ArrowRight size={15} className="rotate-90 text-sky-400" />
-            <PodRow filled={sc ? active + starting : active} tone={starting ? 'border-sky-400 bg-sky-400/70' : 'border-emerald-400 bg-emerald-400/70'} />
+            <PodRow
+              filled={sc ? active + starting + terminating : active}
+              tone={terminating ? 'border-amber-400 bg-amber-400/70' : starting ? 'border-sky-400 bg-sky-400/70' : 'border-emerald-400 bg-emerald-400/70'}
+            />
           </div>
 
           <div className="flex items-center justify-between w-full px-1">
-            <span className="text-[11px] text-slate-400">처리량 증대율:</span>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-slate-400">실시간 처리량 증대율:</span>
+              <span className="font-mono text-[10px] text-slate-400">
+                실측 소비: <b className="text-sky-300 font-mono">{snap.pipeline.drain_rate} msg/s</b>
+              </span>
+            </div>
             <motion.div key={pct} initial={{ scale: 1.25 }} animate={{ scale: 1 }} className={`flex items-center gap-1 font-mono text-base font-extrabold ${pct > 100 ? 'text-emerald-300' : 'text-slate-400'}`}>
               +{pct}%
               {pct > 100 && (
@@ -269,7 +294,7 @@ export default function RemediationVisualDock({ snap }: { snap: Snapshot }) {
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>SECTION 4 : AIOps 실시간 자율 치유 및 조치 현황</span>
+              <span>SECTION 5 : AIOps 실시간 자율 치유 및 조치 현황</span>
               <span className="rounded bg-violet-950 px-2 py-0.5 text-[10px] font-normal text-violet-300 border border-violet-800">
                 Autonomous Remediation Dock
               </span>

@@ -7,8 +7,9 @@ from typing import Optional
 
 from aiops.rag_agent import make_rag_agent
 from aiops.remediation import AIOpsEngine, Remediator, SlackNotifier
-from config import settings
+from config import TOPIC_ALERT, settings
 from edge_simulator.generator import EdgeSimulator, InProcessTransport, WebSocketTransport
+from models.schemas import AlertEvent, epoch_ms
 from pipeline.dataflow_worker import DataflowWorkerPool, make_sink
 from pipeline.gateway import IngestionGateway
 from pipeline.message_hub import MessageHub, make_broker
@@ -80,9 +81,19 @@ class Platform:
         elif sid == 1:  # 모터 불량 (단독)
             s.active_scenarios.add(1)
             self.edge.trigger_motor_fault()
+            s.motor.svm = settings.svm_fault
+            s.motor.status = "WARNING"
+            s.push_event("VIBRATION_HIGH")
+            ev = AlertEvent(type="VIBRATION_HIGH", source="MOTOR_LINE_A_01", value=settings.svm_fault, threshold=settings.svm_threshold)
+            await self.engine.dispatch_now(ev)
+            self.hub.emit_alert(ev)
         elif sid == 2:  # 콜드체인 Zone A 온도 상승 + 노드 단절
             s.active_scenarios.add(2)
             self.edge.trigger_zone_a_fault()
+            s.push_event("TEMP_HIGH")
+            ev = AlertEvent(type="TEMP_HIGH", source="COLD_ZONE_A_01", zone="ZONE_A", value=9.2, threshold=settings.temp_threshold_c)
+            await self.engine.dispatch_now(ev)
+            self.hub.emit_alert(ev)
         elif sid == 3:  # 주문 폭증 (단독 — 큐 적체 & HPA 오토스케일아웃)
             s.active_scenarios.add(3)
             if self._burst:
@@ -93,12 +104,40 @@ class Platform:
             self.edge.reset_motor()
             s.motor.svm = settings.svm_normal
             s.motor.status = "NORMAL"
-            s.remediation.slack = None
+            if s.remediation.slack and ("모터" in s.remediation.slack.manual_title or "BEARING" in s.remediation.slack.cause):
+                s.remediation.slack = None
             s.remove_events("VIBRATION_HIGH", "ACTION_SLACK")
         elif sid == 5:  # Zone A 센서 및 냉각기 복구 (Failback)
             s.active_scenarios.discard(2)
             self.edge.reset_zone_a()
             self.gateway.restore_zone_a()
             s.remediation.failover = None
+            if s.remediation.slack and ("콜드체인" in s.remediation.slack.manual_title or "COLDCHAIN" in s.remediation.slack.cause):
+                s.remediation.slack = None
             s.remove_events("NODE_DOWN", "TEMP_HIGH", "ACTION_FAILOVER")
+        elif sid == 6:  # 컨베이어 비정상 급가속 및 라인 진동
+            s.active_scenarios.add(6)
+            s.push_event("CONVEYOR_ANOMALY")
+            ev = AlertEvent(type="CONVEYOR_ANOMALY", source="CONVEYOR_01", value=2.8, threshold=1.5)
+            await self.engine.dispatch_now(ev)
+            self.hub.emit_alert(ev)
+        elif sid == 7:  # 컨베이어 라인 안정화 (인버터 PID 보정 ➔ 정속 1.0 m/s 복구)
+            s.active_scenarios.discard(6)
+            s.remove_events("CONVEYOR_ANOMALY")
+            if s.remediation.slack and ("컨베이어" in s.remediation.slack.manual_title or "CONVEYOR" in s.remediation.slack.cause):
+                s.remediation.slack = None
         return sorted(s.active_scenarios)
+
+    async def step_motor_svm(self, delta: float = 1.5) -> float:
+        """게이지 화살표 클릭 시 진동치를 delta(1.5)만큼 증감. 7.0 돌파 시 경보 & 인터록 자동 발동."""
+        s = self.store
+        val = self.edge.step_motor_svm(delta)
+        s.motor.svm = val
+        if val >= settings.svm_threshold and 1 not in s.active_scenarios:
+            s.active_scenarios.add(1)
+            s.motor.status = "WARNING"
+            s.push_event("VIBRATION_HIGH")
+            ev = AlertEvent(type="VIBRATION_HIGH", source="MOTOR_LINE_A_01", value=val, threshold=settings.svm_threshold)
+            await self.engine.dispatch_now(ev)
+            self.hub.emit_alert(ev)
+        return val

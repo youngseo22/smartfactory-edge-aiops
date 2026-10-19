@@ -1,16 +1,17 @@
 import { Factory, Loader2 } from 'lucide-react'
 import ColdChainGraphView from './components/ColdChainGraphView'
-import FactoryContainerView from './components/FactoryContainerView'
 import PipelineTopology from './components/PipelineTopology'
+import ProcessingContainerView from './components/ProcessingContainerView'
 import RemediationVisualDock from './components/RemediationVisualDock'
 import ScenarioController from './components/ScenarioController'
+import SmartManufacturingView from './components/SmartManufacturingView'
 import { useDashboard } from './hooks/useDashboard'
 
 export default function App() {
   const { snap, connected } = useDashboard()
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-[1400px] flex-col gap-4 p-4">
+    <div className="mx-auto flex min-h-screen max-w-[1520px] flex-col gap-4 p-4">
       {/* 헤더 + 시나리오 컨트롤러 */}
       <header className="panel flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
         <div className="flex items-center gap-3">
@@ -31,7 +32,7 @@ export default function App() {
             </div>
           </div>
         </div>
-        <ScenarioController active={snap?.active_scenarios ?? []} />
+        <ScenarioController active={snap?.active_scenarios ?? []} snap={snap} />
       </header>
 
       {!snap ? (
@@ -40,11 +41,17 @@ export default function App() {
         </div>
       ) : (
         <>
+          {/* 상위: SECTION 1 실시간 데이터 파이프라인 & Pub/Sub 큐 토폴로지 */}
           <PipelineTopology snap={snap} />
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <FactoryContainerView snap={snap} />
+
+          {/* 중위: SECTION 2 스마트 제조 라인, SECTION 3 스마트 콜드체인 실시간 온도, SECTION 4 처리 컨테이너 */}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+            <SmartManufacturingView snap={snap} />
             <ColdChainGraphView snap={snap} />
+            <ProcessingContainerView snap={snap} />
           </div>
+
+          {/* 하위: SECTION 5 AIOps 실시간 자율 치유 및 조치 현황 */}
           <RemediationVisualDock snap={snap} />
         </>
       )}
