@@ -44,6 +44,6 @@ export function useDashboard() {
   return { snap, connected }
 }
 
-export async function triggerScenario(id: 0 | 1 | 2): Promise<void> {
+export async function triggerScenario(id: 0 | 1 | 2 | 3 | 4 | 5): Promise<void> {
   await fetch(`/api/scenario/${id}`, { method: 'POST' })
 }

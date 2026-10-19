@@ -89,8 +89,8 @@ function Pod({ pod }: { pod: PodState }) {
 
 export default function FactoryContainerView({ snap }: { snap: Snapshot }) {
   const { motor, worker_pods: pods } = snap
-  const isScenario1 = snap.active_scenarios.includes(1) || snap.events.some((e) => ['VIBRATION_HIGH', 'BACKLOG_HIGH'].includes(e))
-  const fault = motor.svm >= SVM_WARN || isScenario1
+  const isMotorFault = snap.active_scenarios.includes(1) || snap.events.includes('VIBRATION_HIGH')
+  const fault = motor.svm >= SVM_WARN || isMotorFault
   const spinDur = fault ? 1.0 : 3.2
   const beltCls = fault ? 'animate-belt-fast' : 'animate-belt'
   const bottleDur = fault ? 2.8 : 6
@@ -122,14 +122,7 @@ export default function FactoryContainerView({ snap }: { snap: Snapshot }) {
       </div>
 
       {/* ── 모터 + 계기판 ── */}
-      <div className={`relative flex items-center justify-around rounded-lg border-2 p-3 transition-colors ${fault ? 'border-red-500 bg-red-950/30' : 'border-slate-700 bg-slate-950/60'}`}>
-        {fault && (
-          <motion.div
-            className="pointer-events-none absolute inset-0 rounded-lg"
-            animate={{ boxShadow: ['inset 0 0 0 0 rgba(239,68,68,0)', 'inset 0 0 36px 6px rgba(239,68,68,0.55)', 'inset 0 0 0 0 rgba(239,68,68,0)'] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-          />
-        )}
+      <div className="relative flex items-center justify-around rounded-lg border-2 border-slate-700 bg-slate-950/60 p-3 transition-colors">
         {/* 캡 조립 모터 #1 — 평상시 Spin, 과부하 시 Shake */}
         <div className="flex flex-col items-center gap-1.5">
           <motion.div

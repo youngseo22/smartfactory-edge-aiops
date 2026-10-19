@@ -76,9 +76,9 @@ async def state():
 
 @app.post("/api/scenario/{scenario_id}")
 async def trigger_scenario(scenario_id: int):
-    """0 = Normal(리셋) · 1 = 모터 과부하+주문 폭증 · 2 = 콜드체인 노드 단절"""
-    if scenario_id not in (0, 1, 2):
-        raise HTTPException(status_code=404, detail="scenario must be 0, 1 or 2")
+    """0 = Normal · 1 = 모터 불량 · 2 = 콜드체인 이상 · 3 = 주문 폭증 · 4 = 모터 교체 · 5 = Zone A 복구"""
+    if scenario_id not in (0, 1, 2, 3, 4, 5):
+        raise HTTPException(status_code=404, detail="scenario must be between 0 and 5")
     active = await app.state.platform.apply_scenario(scenario_id)
     return {"ok": True, "scenario": scenario_id, "active": active}
 

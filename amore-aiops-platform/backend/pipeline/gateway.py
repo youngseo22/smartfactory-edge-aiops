@@ -169,3 +169,20 @@ class IngestionGateway:
             if zs.status == "OFFLINE":
                 zs.status = "ONLINE"
         self.store.last_seen[self.store.motor.sensor_id] = now
+
+    def restore_zone_a(self) -> None:
+        """Zone A 냉각기/통신 복구: Zone A 상태를 ONLINE으로 돌리고 Primary로 Failback 라우팅 원복."""
+        now = time.monotonic()
+        rt = self.store.routing
+        rt.active_zone = "ZONE_A"
+        rt.failover_active = False
+        rt.data_loss_pct = 0.0
+        rt.replayed = 0
+        rt.switched_at = None
+        rt.table = {"ZONE_A": "ZONE_A", "ZONE_B": "ZONE_B"}
+        self._down.discard("ZONE_A")
+        self.store.last_seen["ZONE_A"] = now
+        za = self.store.zones.get("ZONE_A")
+        if za:
+            za.status = "ONLINE"
+            za.temp_c = 4.5

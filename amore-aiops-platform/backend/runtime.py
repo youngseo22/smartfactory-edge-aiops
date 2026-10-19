@@ -77,13 +77,28 @@ class Platform:
             self.gateway.reset()
             s.active_scenarios.clear()
             s.clear_events()
-        elif sid == 1:  # 캡 닫힘 모터 과부하 + 주문 폭증
+        elif sid == 1:  # 모터 불량 (단독)
             s.active_scenarios.add(1)
             self.edge.trigger_motor_fault()
-            if self._burst:
-                self._burst.cancel()
-            self._burst = asyncio.create_task(self.edge.order_burst())
         elif sid == 2:  # 콜드체인 Zone A 온도 상승 + 노드 단절
             s.active_scenarios.add(2)
             self.edge.trigger_zone_a_fault()
+        elif sid == 3:  # 주문 폭증 (단독 — 큐 적체 & HPA 오토스케일아웃)
+            s.active_scenarios.add(3)
+            if self._burst:
+                self._burst.cancel()
+            self._burst = asyncio.create_task(self.edge.order_burst())
+        elif sid == 4:  # 모터 교체 / 현장 정비 완료 (모터 진동 정상화)
+            s.active_scenarios.discard(1)
+            self.edge.reset_motor()
+            s.motor.svm = settings.svm_normal
+            s.motor.status = "NORMAL"
+            s.remediation.slack = None
+            s.remove_events("VIBRATION_HIGH", "ACTION_SLACK")
+        elif sid == 5:  # Zone A 센서 및 냉각기 복구 (Failback)
+            s.active_scenarios.discard(2)
+            self.edge.reset_zone_a()
+            self.gateway.restore_zone_a()
+            s.remediation.failover = None
+            s.remove_events("NODE_DOWN", "TEMP_HIGH", "ACTION_FAILOVER")
         return sorted(s.active_scenarios)

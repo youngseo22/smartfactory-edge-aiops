@@ -6,4 +6,4 @@ if (-not (Test-Path $venvPy)) {
     exit 1
 }
 Write-Host "▶ 백엔드 서버 시작 중 (http://localhost:8000)..." -ForegroundColor Green
-& $venvPy -m uvicorn main:app --host 0.0.0.0 --port 8000 @args
+& $venvPy -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload @args

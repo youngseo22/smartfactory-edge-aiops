@@ -88,6 +88,18 @@ class EdgeSimulator:
         self._temp_a = 4.5
         self._svm = settings.svm_normal  # 리셋 시 진동 즉시 정상화 (서서히 내려오며 재경보되는 것 방지)
 
+    def reset_motor(self) -> None:
+        """모터 정비/교체 완료: 모터 결함 단독 해제 및 진동치 즉시 정상화."""
+        self.motor_fault = False
+        self._svm = settings.svm_normal
+
+    def reset_zone_a(self) -> None:
+        """Zone A 냉각기 수리 및 네트워크 복구 완료: 온도 4.5°C 복구 및 통신 재개."""
+        self.zone_a_heating = False
+        self.zone_a_cut = False
+        self._heat_ticks = 0
+        self._temp_a = 4.5
+
     async def order_burst(self) -> None:
         """마감 세일 주문 폭주: burst_total 건을 짧은 시간에 Gateway 로 주입."""
         per = settings.burst_total // settings.burst_chunks

@@ -76,6 +76,10 @@ class StateStore:
     def clear_events(self) -> None:
         self._events.clear()
 
+    def remove_events(self, *codes: str) -> None:
+        targets = set(codes)
+        self._events = deque([(c, t) for c, t in self._events if c not in targets], maxlen=32)
+
     def recent_events(self, within_s: float = 5.0) -> list[str]:
         now = time.monotonic()
         out: list[str] = []

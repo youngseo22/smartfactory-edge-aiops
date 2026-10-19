@@ -100,9 +100,9 @@ export default function ColdChainGraphView({ snap }: { snap: Snapshot }) {
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2">
-              <span>SECTION 3 : 스마트 콜드체인 실시간 온도 &amp; Failover</span>
+              <span>SECTION 3 : 스마트 콜드체인 실시간 온도</span>
               <span className="rounded bg-sky-950 px-2 py-0.5 text-[10px] font-normal text-sky-300 border border-sky-800">
-                Cold Chain Dual-Zone &amp; Failover
+                Cold Chain Dual-Zone
               </span>
             </h2>
           </div>

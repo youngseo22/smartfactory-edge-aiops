@@ -9,7 +9,7 @@ Python 3.11+ / Node 18+ 필요. 백엔드는 `backend/.venv` 가상환경에서 
 ```bash
 # macOS / Linux / Git Bash
 ./setup.sh            # venv 생성 + pip/npm 설치  (GCP 연동: ./setup.sh --gcp)
-./run_backend.sh      # 터미널 1 — http://localhost:8000  (venv 활성화 불필요)
+./run_backend.sh      # 터미널 1 — http://localhost:8000 
 ./run_frontend.sh     # 터미널 2 — http://localhost:5173
 ```
 
@@ -37,9 +37,9 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 수동 실행: `python -m venv backend/.venv && source backend/.venv/bin/activate && pip install -r backend/requirements.txt && cd backend && uvicorn main:app`
 
-대시보드 우측 상단 버튼: `●↺` Normal(리셋) · `🔥 1` 모터 과부하 + 주문 폭증 · `❄ 2` 콜드체인 Zone A 단절.
+대시보드 우측 상단 버튼: `🔄 정상 운영` · `📈 주문 폭증` · `🔥 모터 불량` · `🔧 모터 교체` · `❄️ 콜드체인 이상`.
 
-REST로도 트리거 가능: `curl -X POST localhost:8000/api/scenario/1` (0 = 리셋, 1, 2)
+REST로도 트리거 가능: `curl -X POST localhost:8000/api/scenario/1` (0 = 리셋, 1 = 모터불량, 2 = 콜드체인, 3 = 주문폭증, 4 = 모터교체)
 
 ## 모드
 
@@ -53,5 +53,8 @@ gcp 모드 의존성: `backend/requirements-gcp.txt` (초기화 실패 시 자�
 
 ## 동작 요약
 
-- **시나리오 1**: 모터 SVM → 8.5, 주문 1,250건 주입(피크 ≈ 1,200건 = 임계치 120%) → Route B 가 `VIBRATION_HIGH` / `BACKLOG_HIGH` 감지 → Slack RAG 카드(매뉴얼 p.42, `Torque -0.5 Turn`) + 워커 2→6 순차 점등(처리량 300%). 적체 해소 후 12초 뒤 자동 축소.
-- **시나리오 2**: Zone A 온도 상승(8.0℃ 초과) 후 노드 단절 → 3초 Heartbeat 타임아웃 → `NODE_DOWN` → Zone B 로 라우팅 전환, 단절 구간은 B 의 미러 버퍼에서 재생(Replay)하여 시퀀스 기준 유실 0% 검증.
+- **0. 정상 운영 (Reset)**: 전체 시스템을 초기 상태로 복구 및 모든 장애/알림 해제.
+- **1. 모터 불량**: 캡 조립 모터 SVM → 8.5 급증 → 컨베이어 흔들림 → Route B가 `VIBRATION_HIGH` 감지 → Action 1 Slack RAG 카드(매뉴얼 p.14, `Torque Adjust`) 발송.
+- **2. 콜드체인 이상**: Zone A 저온 창고 과온(8.0℃ 초과) 및 노드 단절 → Action 3 무중단 자동 절체(Failover) 가동, Zone B 미러 버퍼 재생으로 유실 0% 방어.
+- **3. 주문 폭증**: 주문 1,250건 버스트 주입 → Pub/Sub 큐 적체(`BACKLOG_HIGH`) → Action 2 GKE 워커 파드 2→6대 자동 확장(처리량 +150%). 큐 적체 해소 후 자동 축소.
+- **4. 모터 교체 (정비)**: 현장 엔지니어가 모터 조치를 완료하여 모터 SVM 정상화(2.8 N·m) 및 진동 경보 즉시 해제.
