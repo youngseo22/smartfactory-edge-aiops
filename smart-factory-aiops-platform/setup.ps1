@@ -37,8 +37,9 @@ if (-not (Test-Path ".env") -and (Test-Path ".env.example")) {
     Copy-Item ".env.example" ".env"
 }
 
-# 4. 백엔드 의존성 설치
-$req = if ($Gcp) { "requirements-gcp.txt" } else { "requirements.txt" }
+# 4. 백엔드 의존성 설치 (.env에 AIOPS_MODE=gcp가 설정되어 있거나 -Gcp 플래그 지정 시 requirements-gcp.txt 설치)
+$envIsGcp = (Test-Path ".env") -and ((Get-Content ".env" -Raw) -match "(?m)^\s*AIOPS_MODE\s*=\s*gcp\b")
+$req = if ($Gcp -or $envIsGcp) { "requirements-gcp.txt" } else { "requirements.txt" }
 Write-Host "▶ 백엔드 의존성 설치 중 ($req)..." -ForegroundColor Yellow
 & $venvPy -m pip install --upgrade pip
 & $venvPy -m pip install -r "backend\$req"
