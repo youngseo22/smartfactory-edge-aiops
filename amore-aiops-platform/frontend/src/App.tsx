@@ -21,7 +21,7 @@ export default function App() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-black tracking-wide text-white">
-                AMOREPACIFIC AIOps &amp; DIGITAL TWIN
+                SMART FACTORY AIOps &amp; DIGITAL TWIN
               </h1>
               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
                 connected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-red-500/15 text-red-300 border border-red-500/30'
