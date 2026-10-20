@@ -1,4 +1,4 @@
-# 🏭 Smart Cosmetic Factory & Cold-Chain AIOps Platform
+# 🏭 Smart Factory AIOps Platform
 
 스마트 화장품 제조 공정(Smart Cosmetic Factory)과 콜드체인 풀필먼트 물류 센터(Cold-Chain Fulfillment)의 실시간 IoT 센서·주문 스트림을 단일 클라우드 파이프라인으로 수집하고, 설비·인프라 장애 발생 시 **2-Stage 하이브리드 RAG 에이전트(로컬 BM25 + Vertex AI Gemini 2.5 Flash)**가 원인을 진단하여 **자율 치유(공정 안전 인터록 / 부서별 Slack SOP 처방 / GKE 워커 오토스케일링 / Dual-Zone 무손실 Failover)**를 수행하는 디지털 트윈 관제 플랫폼입니다. 전체 아키텍처 및 상세 명세는 [`plan.md`](plan.md)를 참고하세요.
 

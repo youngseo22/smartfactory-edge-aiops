@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
         await platform.stop()
 
 
-app = FastAPI(title="AIOps Enterprise Monitoring Platform", lifespan=lifespan)
+app = FastAPI(title="Smart Factory AIOps Platform", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 

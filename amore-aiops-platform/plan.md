@@ -1,4 +1,4 @@
-# 📋 [Smart Cosmetic Factory & Cold-Chain AIOps Platform] 프로젝트 기획안
+# 📋 [Smart Factory AIOps Platform] 프로젝트 기획안
 
 ## 1. 프로젝트 요약 (Executive Summary)
 
@@ -87,7 +87,7 @@
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
-│ 🏭 SMART FACTORY AIOps & DIGITAL TWIN  [🟢 실시간 연동 LIVE]                             │
+│ 🏭 SMART FACTORY AIOps PLATFORM      [🟢 실시간 연동 LIVE]                             │
 │    [🔄 정상 운영] [📈 주문 폭증] [🔧 모터 교체] [⚡ 컨베이어 이상] [❄️ 콜드체인 이상] ... │
 ├──────────────────────────────────────────────────────────────────────────────────────────┤
 │ [SECTION 1. Live Pipeline Topology & Pub/Sub Queue (실시간 5-Stage 파이프라인 토폴로지)] │

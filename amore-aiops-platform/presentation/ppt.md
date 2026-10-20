@@ -1,7 +1,7 @@
 # Role & Goal
 
 너는 엔터프라이즈 클라우드 아키텍처 및 AIOps 솔루션 전문 프레젠테이션 디자이너이자 테크니컬 라이터야.
-아래의 프로젝트 명세와 슬라이드 구성을 바탕으로, 기술적 깊이와 시각적 직관성을 모두 갖춘 **「Smart Cosmetic Factory & Cold-Chain AIOps & Digital Twin Platform」** 발표자료(PPT) 슬라이드 내용을 작성해 줘.
+아래의 프로젝트 명세와 슬라이드 구성을 바탕으로, 기술적 깊이와 시각적 직관성을 모두 갖춘 **「Smart Factory AIOps Platform」** 발표자료(PPT) 슬라이드 내용을 작성해 줘.
 
 > **⚠️ 필수 제약 사항 (Brand-Neutral Policy):**
 >
@@ -28,7 +28,7 @@
 
 ## Slide 1. 표지 (Cover)
 
-* **메인 타이틀:** Smart Cosmetic Factory & Cold-Chain AIOps Platform
+* **메인 타이틀:** Smart Factory AIOps Platform
 * **서브 타이틀:** 실시간 IoT 스트리밍 파이프라인과 Vertex AI RAG 기반 자율 치유(Self-Healing) 디지털 트윈 관제 시스템
 * **핵심 키워드 태그:** `#SmartFactory` `#ColdChain` `#AIOps` `#DigitalTwin` `#GCP` `#VertexAI_RAG` `#ZeroDataLoss`
 * **시각 요소 가이드:** 딥 네이비 블루(`#001C58`)에서 코발트 블루(`#194E91`)로 이어지는 세련된 그라데이션 배경 위에, 스마트 화장품 제조 라인과 콜드체인 물류 센터가 빛나는 데이터 스트림(Edge → Cloud → AI)으로 연결된 하이테크 아이소메트릭 그래픽 배치

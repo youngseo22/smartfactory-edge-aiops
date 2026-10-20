@@ -3,7 +3,7 @@ param([switch]$Gcp)
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
-Write-Host "=== AIOps Platform 환경 설정 시작 ===" -ForegroundColor Cyan
+Write-Host "=== Smart Factory AIOps Platform 환경 설정 시작 ===" -ForegroundColor Cyan
 
 # 1. Python 감지
 $pyCmd = $null
